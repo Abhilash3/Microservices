@@ -2,10 +2,10 @@ package com.epam.onboarding.service;
 
 import com.epam.onboarding.common.Utils;
 import com.epam.onboarding.domain.DomainObject;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -41,7 +41,7 @@ public abstract class BaseService<E extends DomainObject> implements IBaseServic
     @Override
     public List<E> getAll() {
         return daoStore().findAll();
-}
+    }
 
     @Override
     public E getById(@Nonnull Long id) {

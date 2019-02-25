@@ -19,12 +19,10 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(ProductController.class)
@@ -48,7 +46,7 @@ public class ProductControllerTest {
 
         when(productService.getById(product.getId())).thenReturn(product);
 
-        mvc.perform(get("/product/fetch/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/products/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
         verify(productService).getById(product.getId());
@@ -60,7 +58,7 @@ public class ProductControllerTest {
 
         when(productService.getAll()).thenReturn(products);
 
-        mvc.perform(get("/product/fetch").contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/products").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(products.get(0).getId())))
                 .andExpect(jsonPath("$[0].name", is(products.get(0).getName())))
@@ -79,29 +77,51 @@ public class ProductControllerTest {
         when(productService.save(any(Product.class))).thenReturn(product);
 
         mvc.perform(
-                post("/product/create")
+                post("/products")
                         .param("productName", product.getName())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
+
         verify(productService).getByName(product.getName());
         verify(productService).save(any(Product.class));
     }
 
     @Test
     public void createDuplicateProduct() throws Exception {
-        Product product = product("B");
+        Product product = product("A");
 
         when(productService.getByName(product.getName())).thenReturn(product);
 
         mvc.perform(
-                post("/product/create")
+                post("/products")
                         .param("productName", product.getName())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
+
         verify(productService).getByName(product.getName());
         verify(productService, times(0)).save(any(Product.class));
+    }
+
+    @Test
+    public void updateProduct() throws Exception {
+        Product product = product("A");
+
+        when(productService.getById(product.getId())).thenReturn(product);
+
+        mvc.perform(
+                put("/products/" + product.getId())
+                        .param("productName", "B")
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is("B")));
+
+        verify(productService).getById(product.getId());
+        verify(productService).save(any(Product.class));
     }
 
     @Test
@@ -110,9 +130,10 @@ public class ProductControllerTest {
 
         when(productService.removeById(product.getId())).thenReturn(product);
 
-        mvc.perform(post("/product/delete/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(delete("/products/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
+
         verify(productService).removeById(product.getId());
     }
 

@@ -9,32 +9,41 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/product")
 public class ProductController {
 
     @Autowired
     private IProductService productService;
 
-    @GetMapping(value = "/fetch/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Product> fetchAll() {
+        return productService.getAll();
+    }
+
+    @GetMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product fetch(@PathVariable("id") Long productId) {
         return productService.getById(productId);
     }
 
-    @GetMapping(value = "/fetch", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Product> fetch() {
-        return productService.getAll();
-    }
-
-    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product create(@RequestParam("productName") String productName) {
-        String name = productName.trim();
-        Product product = productService.getByName(name);
+        Product product = productService.getByName(productName);
         if (product != null) return product;
 
-        return productService.save(new Product().setName(name));
+        return productService.save(new Product().setName(productName));
     }
 
-    @PostMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Product update(@PathVariable("id") Long productId, @RequestParam("productName") String productName) {
+        Product product = productService.getById(productId);
+        if (product == null) return null;
+
+        product.setName(productName);
+        productService.save(product);
+
+        return product;
+    }
+
+    @DeleteMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product delete(@PathVariable("id") Long productId) {
         return productService.removeById(productId);
     }
