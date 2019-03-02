@@ -1,13 +1,25 @@
 package com.epam.onboarding.domain;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import javax.persistence.*;
 import java.util.Objects;
 
-@Document(collection = "products")
-public class Product extends DomainObject {
+@Entity
+@Table(name = "products")
+public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     private String name;
+
+    public Long getId() {
+        return id;
+    }
+
+    public Product setId(Long id) {
+        this.id = id;
+        return this;
+    }
 
     public String getName() {
         return name;

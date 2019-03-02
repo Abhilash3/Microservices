@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 public class ProductController {
 
@@ -15,7 +13,7 @@ public class ProductController {
     private IProductService productService;
 
     @GetMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Product> fetchAll() {
+    public Iterable<Product> fetchAll() {
         return productService.getAll();
     }
 
