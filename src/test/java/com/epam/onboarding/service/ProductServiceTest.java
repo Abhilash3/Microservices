@@ -1,6 +1,5 @@
 package com.epam.onboarding.service;
 
-import com.epam.onboarding.common.Utils;
 import com.epam.onboarding.dao.ProductDAO;
 import com.epam.onboarding.domain.Product;
 import org.junit.Test;
@@ -36,14 +35,7 @@ public class ProductServiceTest {
         Product productA = product("A");
         productService.save(productA);
 
-        verify(productDAO).delete(productA.getId());
         verify(productDAO).save(productA);
-
-        Product productB = product(null, "A");
-        productService.save(productB);
-
-        assertNotNull(productB.getId());
-        verify(productDAO).save(productB);
     }
 
     @Test
@@ -70,12 +62,12 @@ public class ProductServiceTest {
     @Test
     public void findProductById() {
         List<Product> products = Arrays.asList(product(10L, "A"), product(20L, "B"), product(30L, "C"));
-        when(productDAO.findAll()).thenReturn(products);
+        products.forEach(product -> when(productDAO.findOne(product.getId())).thenReturn(product));
 
         assertEquals(product(10L, "A"), productService.getById(10L));
         assertEquals(product(20L, "B"), productService.getById(20L));
 
-        verify(productDAO, times(2)).findAll();
+        verify(productDAO, times(2)).findOne(anyLong());
     }
 
     @Test
@@ -93,21 +85,19 @@ public class ProductServiceTest {
     public void removeProductById() {
         Product product = product(10L, "ABC");
 
-        when(productDAO.findAll()).thenReturn(Collections.singletonList(product));
+        when(productDAO.findOne(product.getId())).thenReturn(product);
 
         productService.removeById(10L);
 
-        verify(productDAO).findAll();
+        verify(productDAO).findOne(10L);
         verify(productDAO).delete(10L);
     }
 
     private Product product(String name) {
-        return product(Utils.randomLong(), name);
+        return product(100L, name);
     }
 
     private Product product(Long id, String name) {
-        Product product = new Product().setName(name);
-        product.setId(id);
-        return product;
+        return new Product().setName(name).setId(id);
     }
 }

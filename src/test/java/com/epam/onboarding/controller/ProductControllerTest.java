@@ -1,6 +1,5 @@
 package com.epam.onboarding.controller;
 
-import com.epam.onboarding.common.Utils;
 import com.epam.onboarding.dao.ProductDAO;
 import com.epam.onboarding.domain.Product;
 import com.epam.onboarding.service.IProductService;
@@ -60,11 +59,8 @@ public class ProductControllerTest {
 
         mvc.perform(get("/products").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id", is(products.get(0).getId())))
                 .andExpect(jsonPath("$[0].name", is(products.get(0).getName())))
-                .andExpect(jsonPath("$[1].id", is(products.get(1).getId())))
                 .andExpect(jsonPath("$[1].name", is(products.get(1).getName())))
-                .andExpect(jsonPath("$[2].id", is(products.get(2).getId())))
                 .andExpect(jsonPath("$[2].name", is(products.get(2).getName())));
         verify(productService).getAll();
     }
@@ -138,12 +134,6 @@ public class ProductControllerTest {
     }
 
     private Product product(String name) {
-        return product(Utils.randomLong(), name);
-    }
-
-    private Product product(Long id, String name) {
-        Product product = new Product().setName(name);
-        product.setId(id);
-        return product;
+        return new Product().setName(name).setId(100L);
     }
 }

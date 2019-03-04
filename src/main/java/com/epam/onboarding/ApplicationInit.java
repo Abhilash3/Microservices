@@ -20,9 +20,7 @@ public class ApplicationInit implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (productService.getAll().isEmpty()) {
-            Arrays.asList("Car", "Bike", "Fridge", "Washing Machine", "Mobile", "Laptop")
-                    .forEach(a -> productService.save(new Product().setName(a)));
-        }
+        productService.getAll().forEach(a -> productService.removeById(a.getId()));
+        Arrays.asList("Car", "Bike", "Fridge", "Washing Machine", "Mobile", "Laptop").forEach(a -> productService.save(new Product().setName(a)));
     }
 }
