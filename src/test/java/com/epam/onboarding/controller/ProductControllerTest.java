@@ -2,16 +2,21 @@ package com.epam.onboarding.controller;
 
 import com.epam.onboarding.dao.ProductDAO;
 import com.epam.onboarding.domain.Product;
+import com.epam.onboarding.domain.Review;
 import com.epam.onboarding.service.IProductService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,16 +44,19 @@ public class ProductControllerTest {
     @MockBean
     private IProductService productService;
 
+    @MockBean
+    private RestTemplate restTemplate;
+
     @Test
     public void fetchProduct() throws Exception {
         Product product = product("A");
 
-        when(productService.getById(product.getId())).thenReturn(product);
+        when(productService.getById(product.getProductId())).thenReturn(product);
 
-        mvc.perform(get("/products/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/products/" + product.getProductId()).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
-        verify(productService).getById(product.getId());
+        verify(productService).getById(product.getProductId());
     }
 
     @Test
@@ -74,7 +82,8 @@ public class ProductControllerTest {
 
         mvc.perform(
                 post("/products")
-                        .param("productName", product.getName())
+                        .param("name", product.getName())
+                        .param("description", product.getDescription())
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
@@ -92,7 +101,8 @@ public class ProductControllerTest {
 
         mvc.perform(
                 post("/products")
-                        .param("productName", product.getName())
+                        .param("name", product.getName())
+                        .param("description", product.getDescription())
                         .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
@@ -106,17 +116,17 @@ public class ProductControllerTest {
     public void updateProduct() throws Exception {
         Product product = product("A");
 
-        when(productService.getById(product.getId())).thenReturn(product);
+        when(productService.getById(product.getProductId())).thenReturn(product);
 
         mvc.perform(
-                put("/products/" + product.getId())
-                        .param("productName", "B")
+                put("/products/" + product.getProductId())
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"property\": \"name\", \"value\": \"B\"}")
         )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is("B")));
 
-        verify(productService).getById(product.getId());
+        verify(productService).getById(product.getProductId());
         verify(productService).save(any(Product.class));
     }
 
@@ -124,16 +134,86 @@ public class ProductControllerTest {
     public void deleteProduct() throws Exception {
         Product product = product("B");
 
-        when(productService.removeById(product.getId())).thenReturn(product);
+        when(productService.removeById(product.getProductId())).thenReturn(product);
 
-        mvc.perform(delete("/products/" + product.getId()).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(delete("/products/" + product.getProductId()).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
 
-        verify(productService).removeById(product.getId());
+        verify(productService).removeById(product.getProductId());
+    }
+
+    @Test
+    public void createReview() throws Exception {
+        Product product = product("A");
+        Review review = review(product.getProductId(), "bad", 2);
+
+        when(restTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Review.class))).thenReturn(review);
+
+        mvc.perform(
+                post("/products/" + product.getProductId() + "/reviews")
+                        .param("description", review.getDescription())
+                        .param("rating", String.valueOf(review.getRating()))
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description", is(review.getDescription())))
+                .andExpect(jsonPath("$.rating", is(review.getRating())));
+
+        verify(restTemplate).postForObject(endsWith(product.getProductId() + "/reviews"), any(HttpEntity.class), eq(Review.class));
+    }
+
+    @Test
+    public void updateReview() throws Exception {
+        Product product = product("A");
+        Review review = review(product.getProductId(), "bad", 1);
+
+        ResponseEntity<Review> mockEntity = mock(ResponseEntity.class);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Review.class))).thenReturn(mockEntity);
+        when(mockEntity.getBody()).thenReturn(review);
+
+        mvc.perform(
+                put(String.format("/products/%d/reviews/%d", product.getProductId(), review.getReviewId()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"property\": \"rating\", \"value\": \"1\"}")
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description", is(review.getDescription())))
+                .andExpect(jsonPath("$.rating", is(review.getRating())));
+
+        verify(restTemplate).exchange(
+                endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
+                eq(HttpMethod.PUT), any(HttpEntity.class), eq(Review.class));
+    }
+
+    @Test
+    public void deleteReview() throws Exception {
+        Product product = product("A");
+        Review review = review(product.getProductId(), "good", 4);
+
+        ResponseEntity<Review> mockEntity = mock(ResponseEntity.class);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Review.class))).thenReturn(mockEntity);
+        when(mockEntity.getBody()).thenReturn(review);
+
+        mvc.perform(
+                delete(String.format("/products/%d/reviews/%d", product.getProductId(), review.getReviewId()))
+                    .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description", is(review.getDescription())))
+                .andExpect(jsonPath("$.rating", is(review.getRating())));
+
+        verify(restTemplate).exchange(
+                endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
+                eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Review.class));
+        verify(mockEntity).getBody();
     }
 
     private Product product(String name) {
-        return new Product().setName(name).setId(100L);
+        return new Product().setName(name).setDescription(name).setProductId(100L);
+    }
+
+    private Review review(Long productId, String description, Integer rating) {
+        return new Review().setProductId(productId).setDescription(description).setRating(rating).setReviewId(200L);
     }
 }

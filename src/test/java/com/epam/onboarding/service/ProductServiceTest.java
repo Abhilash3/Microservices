@@ -62,7 +62,7 @@ public class ProductServiceTest {
     @Test
     public void findProductById() {
         List<Product> products = Arrays.asList(product(10L, "A"), product(20L, "B"), product(30L, "C"));
-        products.forEach(product -> when(productDAO.findOne(product.getId())).thenReturn(product));
+        products.forEach(product -> when(productDAO.findOne(product.getProductId())).thenReturn(product));
 
         assertEquals(product(10L, "A"), productService.getById(10L));
         assertEquals(product(20L, "B"), productService.getById(20L));
@@ -73,19 +73,19 @@ public class ProductServiceTest {
     @Test
     public void removeProduct() {
         Product product = product("ABC");
-        assertNotNull(product.getId());
+        assertNotNull(product.getProductId());
 
         productService.remove(product);
 
         verify(productDAO).delete(product);
-        assertNull(product.getId());
+        assertNull(product.getProductId());
     }
 
     @Test
     public void removeProductById() {
         Product product = product(10L, "ABC");
 
-        when(productDAO.findOne(product.getId())).thenReturn(product);
+        when(productDAO.findOne(product.getProductId())).thenReturn(product);
 
         productService.removeById(10L);
 
@@ -98,6 +98,6 @@ public class ProductServiceTest {
     }
 
     private Product product(Long id, String name) {
-        return new Product().setName(name).setId(id);
+        return new Product().setName(name).setProductId(id);
     }
 }
