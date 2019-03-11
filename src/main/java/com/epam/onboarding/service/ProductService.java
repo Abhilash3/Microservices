@@ -25,7 +25,7 @@ public class ProductService implements IProductService {
     @Override
     public void remove(@Nonnull Product object) {
         productDAO.delete(object);
-        object.setId(null);
+        object.setProductId(null);
     }
 
     @Nullable
