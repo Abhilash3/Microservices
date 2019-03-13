@@ -1,1 +1,4 @@
-
+.idea
+/review-service.iml
+target
+/src/main/resources/liquibase-changeLog.xml
