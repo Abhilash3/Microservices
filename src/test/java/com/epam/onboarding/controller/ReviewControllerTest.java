@@ -26,11 +26,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(ReviewController.class)
+@WebMvcTest(value = ReviewController.class, secure = false)
 @ActiveProfiles("test")
 public class ReviewControllerTest {
 
     private static final String REVIEW_DESCRIPTION_EXPRESSION = "$.description";
+    private static final String D_REVIEWS_D = "/%d/reviews/%d";
 
     @Autowired
     private MockMvc mvc;
@@ -47,7 +48,7 @@ public class ReviewControllerTest {
 
         when(reviewService.getById(review.getReviewId())).thenReturn(review);
 
-        mvc.perform(get(String.format("/%d/reviews/%d", review.getProductId(), review.getReviewId())).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get(String.format(D_REVIEWS_D, review.getProductId(), review.getReviewId())).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(REVIEW_DESCRIPTION_EXPRESSION, is(review.getDescription())));
         verify(reviewService).getById(review.getReviewId());
@@ -92,7 +93,7 @@ public class ReviewControllerTest {
         when(reviewService.getById(review.getReviewId())).thenReturn(review);
 
         mvc.perform(
-                put(String.format("/%d/reviews/%d", review.getProductId(), review.getReviewId()))
+                put(String.format(D_REVIEWS_D, review.getProductId(), review.getReviewId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"property\": \"description\", \"value\": \"very good\"}")
         )
@@ -109,7 +110,7 @@ public class ReviewControllerTest {
 
         when(reviewService.removeById(review.getReviewId())).thenReturn(review);
 
-        mvc.perform(delete(String.format("/%d/reviews/%d", review.getProductId(), review.getReviewId())).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(delete(String.format(D_REVIEWS_D, review.getProductId(), review.getReviewId())).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(REVIEW_DESCRIPTION_EXPRESSION, is(review.getDescription())));
 

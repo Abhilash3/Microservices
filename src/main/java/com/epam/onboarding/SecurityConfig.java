@@ -2,7 +2,6 @@ package com.epam.onboarding;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 @Configuration
 @EnableWebSecurity
 @Order(1)
-@Profile("!test")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${api-header-name}")
