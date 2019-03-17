@@ -33,7 +33,7 @@ public class ProductService implements IProductService {
     public Product removeById(@Nonnull Long id) {
         Product object = getById(id);
         if (object != null) {
-            productDAO.delete(id);
+            productDAO.deleteById(id);
         }
         return object;
     }
@@ -45,7 +45,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product getById(@Nonnull Long id) {
-        return productDAO.findOne(id);
+        return productDAO.findById(id).orElse(null);
     }
 
     @Nullable

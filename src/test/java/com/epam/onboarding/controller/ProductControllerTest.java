@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -21,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.epam.onboarding.controller.ProductController.REVIEW_SERVICE;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,6 +44,9 @@ public class ProductControllerTest {
 
     @MockBean
     private IProductService productService;
+
+    @MockBean
+    private DiscoveryClient discoveryClient;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -160,6 +164,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
+        verify(discoveryClient).getInstances(REVIEW_SERVICE);
         verify(restTemplate).postForObject(endsWith(product.getProductId() + "/reviews"), any(HttpEntity.class), eq(Review.class));
     }
 
@@ -181,6 +186,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
+        verify(discoveryClient).getInstances(REVIEW_SERVICE);
         verify(restTemplate).exchange(
                 endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
                 eq(HttpMethod.PUT), any(HttpEntity.class), eq(Review.class));
@@ -203,6 +209,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
+        verify(discoveryClient).getInstances(REVIEW_SERVICE);
         verify(restTemplate).exchange(
                 endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
                 eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Review.class));
