@@ -33,7 +33,7 @@ public class ReviewService implements IReviewService {
     public Review removeById(@Nonnull Long id) {
         Review object = getById(id);
         if (object != null) {
-            reviewDAO.delete(id);
+            reviewDAO.deleteById(id);
         }
         return object;
     }
@@ -52,6 +52,6 @@ public class ReviewService implements IReviewService {
 
     @Override
     public Review getById(@Nonnull Long id) {
-        return reviewDAO.findOne(id);
+        return reviewDAO.findById(id).orElse(null);
     }
 }

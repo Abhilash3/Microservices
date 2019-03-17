@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -60,12 +61,12 @@ public class ReviewServiceTest {
     @Test
     public void findReviewById() {
         List<Review> reviews = Arrays.asList(review(100L, "ok", 3), review(110L, "bad", 2), review(120L, "good", 4));
-        reviews.forEach(review -> when(reviewDAO.findOne(review.getReviewId())).thenReturn(review));
+        reviews.forEach(review -> when(reviewDAO.findById(review.getReviewId())).thenReturn(Optional.of(review)));
 
         assertEquals(review(100L, "ok", 3), reviewService.getById(100L));
         assertEquals(review(110L, "bad", 2), reviewService.getById(110L));
 
-        verify(reviewDAO, times(2)).findOne(anyLong());
+        verify(reviewDAO, times(2)).findById(anyLong());
     }
 
     @Test
@@ -83,12 +84,12 @@ public class ReviewServiceTest {
     public void removeReviewById() {
         Review review = review(200L, "v.good", 5);
 
-        when(reviewDAO.findOne(review.getReviewId())).thenReturn(review);
+        when(reviewDAO.findById(review.getReviewId())).thenReturn(Optional.of(review));
 
         reviewService.removeById(200L);
 
-        verify(reviewDAO).findOne(200L);
-        verify(reviewDAO).delete(200L);
+        verify(reviewDAO).findById(200L);
+        verify(reviewDAO).deleteById(200L);
     }
 
     private Review review(String description, int rating) {
