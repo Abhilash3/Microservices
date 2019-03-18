@@ -2,3 +2,4 @@
 data
 /product-service.iml
 target
+/src/main/resources/liquibase-changeLog.xml

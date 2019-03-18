@@ -75,7 +75,7 @@ public class ProductControllerTest {
 
     @Test
     public void createProduct() throws Exception {
-        Product product = product("A");
+        Product product = product(null, "A");
 
         when(productService.getByName(product.getName())).thenReturn(null);
         when(productService.save(any(Product.class))).thenReturn(product);
@@ -90,7 +90,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is(product.getName())));
 
         verify(productService).getByName(product.getName());
-        verify(productService).save(any(Product.class));
+        verify(productService).save(eq(product));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath(PRODUCT_NAME_EXPRESSION, is("B")));
 
         verify(productService).getById(product.getProductId());
-        verify(productService).save(any(Product.class));
+        verify(productService).save(eq(product));
     }
 
     @Test
@@ -210,7 +210,11 @@ public class ProductControllerTest {
     }
 
     private Product product(String name) {
-        return new Product().setName(name).setDescription(name).setProductId(100L);
+        return product(100L, name);
+    }
+
+    private Product product(Long productId, String name) {
+        return new Product().setName(name).setDescription(name).setProductId(productId);
     }
 
     private Review review(Long productId, String description, Integer rating) {

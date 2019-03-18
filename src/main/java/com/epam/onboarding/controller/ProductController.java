@@ -4,6 +4,7 @@ import com.epam.onboarding.domain.Product;
 import com.epam.onboarding.domain.Review;
 import com.epam.onboarding.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,12 @@ public class ProductController {
     private static final String REVIEW_SERVICE_URL = "http://localhost:8081/";
     private static final String NAME = "name";
     private static final String DESCRIPTION = "description";
+
+    @Value("${api-header-name}")
+    private String headerName;
+
+    @Value("${api-header-value}")
+    private String headerValue;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -92,6 +99,7 @@ public class ProductController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add(headerName, headerValue);
 
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.add(DESCRIPTION, description);
@@ -110,6 +118,7 @@ public class ProductController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add(headerName, headerValue);
 
         Review review = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(updateRequest, headers), Review.class).getBody();
         review.add(linkTo(ProductController.class).slash(review.getProductId()).withSelfRel());
@@ -123,6 +132,7 @@ public class ProductController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add(headerName, headerValue);
 
         Review review = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(headers), Review.class).getBody();
         review.add(linkTo(ProductController.class).slash(review.getProductId()).withSelfRel());
@@ -134,7 +144,7 @@ public class ProductController {
         private String property;
         private String value;
 
-        public String getProperty() {
+        String getProperty() {
             return property;
         }
 
@@ -143,7 +153,7 @@ public class ProductController {
             return this;
         }
 
-        public String getValue() {
+        String getValue() {
             return value;
         }
 
