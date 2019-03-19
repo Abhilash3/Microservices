@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -62,12 +63,12 @@ public class ProductServiceTest {
     @Test
     public void findProductById() {
         List<Product> products = Arrays.asList(product(10L, "A"), product(20L, "B"), product(30L, "C"));
-        products.forEach(product -> when(productDAO.findOne(product.getProductId())).thenReturn(product));
+        products.forEach(product -> when(productDAO.findById(product.getProductId())).thenReturn(Optional.of(product)));
 
         assertEquals(product(10L, "A"), productService.getById(10L));
         assertEquals(product(20L, "B"), productService.getById(20L));
 
-        verify(productDAO, times(2)).findOne(anyLong());
+        verify(productDAO, times(2)).findById(anyLong());
     }
 
     @Test
@@ -85,12 +86,12 @@ public class ProductServiceTest {
     public void removeProductById() {
         Product product = product(10L, "ABC");
 
-        when(productDAO.findOne(product.getProductId())).thenReturn(product);
+        when(productDAO.findById(product.getProductId())).thenReturn(Optional.of(product));
 
         productService.removeById(10L);
 
-        verify(productDAO).findOne(10L);
-        verify(productDAO).delete(10L);
+        verify(productDAO).findById(10L);
+        verify(productDAO).deleteById(10L);
     }
 
     private Product product(String name) {
