@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/{productId}/reviews")
 public class ReviewController {
 
     private static final String DESCRIPTION = "description";
@@ -15,25 +16,24 @@ public class ReviewController {
     @Autowired
     private IReviewService reviewService;
 
-    @GetMapping(value = "/{productId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Iterable<Review> fetchAll(@PathVariable("productId") Long productId) {
         return reviewService.getAllForProduct(productId);
     }
 
-    @GetMapping(value = "/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Review fetch(@PathVariable("productId") Long productId, @PathVariable("reviewId") Long reviewId) {
+    @GetMapping(value = "/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Review fetch(@PathVariable("reviewId") Long reviewId) {
         return reviewService.getById(reviewId);
     }
 
-    @PostMapping(value = "/{productId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Review create(@PathVariable("productId") Long productId, @RequestParam("description") String description,
                          @RequestParam("rating") Integer rating) {
         return reviewService.save(new Review().setProductId(productId).setRating(rating).setDescription(description));
     }
 
-    @PutMapping(value = "/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Review update(@PathVariable("productId") Long productId, @PathVariable("reviewId") Long reviewId,
-                         @RequestBody UpdateRequest updateRequest) {
+    @PutMapping(value = "/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Review update(@PathVariable("reviewId") Long reviewId, @RequestBody UpdateRequest updateRequest) {
         Review review = reviewService.getById(reviewId);
         if (review == null) return null;
 
@@ -49,8 +49,8 @@ public class ReviewController {
         return review;
     }
 
-    @DeleteMapping(value = "/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Review delete(@PathVariable("productId") Long productId, @PathVariable("reviewId") Long reviewId) {
+    @DeleteMapping(value = "/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Review delete(@PathVariable("reviewId") Long reviewId) {
         return reviewService.removeById(reviewId);
     }
 
