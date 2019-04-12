@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(value = "review-service", configuration = ReviewController.FeignConfiguration.class)
+@FeignClient(value = "review-service", configuration = ReviewController.FeignConfiguration.class, fallback = ReviewFallback.class)
 public interface ReviewController {
 
     @GetMapping(value = "/{productId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)

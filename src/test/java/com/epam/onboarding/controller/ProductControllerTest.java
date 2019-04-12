@@ -155,7 +155,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
-        verify(reviewController).create(product.getProductId(), review.getDescription(), review.getRating());
+        verify(reviewController).create(eq(product.getProductId()), eq(review.getDescription()), eq(review.getRating()));
     }
 
     @Test
@@ -193,7 +193,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
-        verify(reviewController).delete(product.getProductId(), review.getReviewId());
+        verify(reviewController).delete(eq(product.getProductId()), eq(review.getReviewId()));
     }
 
     private Product product(String name) {

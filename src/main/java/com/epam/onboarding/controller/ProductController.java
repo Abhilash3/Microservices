@@ -10,12 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 @RestController
+@RequestMapping("/products")
 public class ProductController {
 
-    static final String REVIEW_SERVICE = "review-service";
     private static final String NAME = "name";
     private static final String DESCRIPTION = "description";
     private static final String PRODUCTS = "products";
+    private static final String PRODUCT = "product";
 
     @Autowired
     private ReviewController reviewController;
@@ -23,7 +24,7 @@ public class ProductController {
     @Autowired
     private IProductService productService;
 
-    @GetMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Iterable<Product> fetchAll() {
         Iterable<Product> products = productService.getAll();
 
@@ -35,7 +36,7 @@ public class ProductController {
         return products;
     }
 
-    @GetMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product fetch(@PathVariable("id") Long productId) {
         Product product = productService.getById(productId);
         if (product != null) {
@@ -46,7 +47,7 @@ public class ProductController {
         return product;
     }
 
-    @PostMapping(value = "/products", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Product create(@RequestParam(NAME) String productName, @RequestParam(DESCRIPTION) String description) {
         Product product = productService.getByName(productName);
         if (product == null) {
@@ -58,7 +59,7 @@ public class ProductController {
         return product;
     }
 
-    @PutMapping(value = "/products/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Product update(@PathVariable("id") Long productId, @RequestBody UpdateRequest updateRequest) {
         Product product = productService.getById(productId);
         if (product == null) return null;
@@ -74,33 +75,33 @@ public class ProductController {
         return product;
     }
 
-    @DeleteMapping(value = "/products/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product delete(@PathVariable("id") Long productId) {
         return productService.removeById(productId);
     }
 
-    @PostMapping(value = "/products/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
     public Review createReview(@PathVariable("id") Long productId, @RequestParam(DESCRIPTION) String description,
                                @RequestParam("rating") int rating) {
         Review review = reviewController.create(productId, description, rating);
-        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withSelfRel());
+        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withRel(PRODUCT));
 
         return review;
     }
 
-    @PutMapping(value = "/products/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Review updateReview(@PathVariable("productId") Long productId,
-                               @PathVariable("reviewId") Long reviewId, @RequestBody UpdateRequest updateRequest) {
+    @PutMapping(value = "/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Review updateReview(@PathVariable("productId") Long productId, @PathVariable("reviewId") Long reviewId,
+                               @RequestBody UpdateRequest updateRequest) {
         Review review = reviewController.update(productId, reviewId, updateRequest);
-        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withSelfRel());
+        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withRel(PRODUCT));
 
         return review;
     }
 
-    @DeleteMapping(value = "/products/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{productId}/reviews/{reviewId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Review deleteReview(@PathVariable("productId") Long productId, @PathVariable("reviewId") Long reviewId) {
         Review review = reviewController.delete(productId, reviewId);
-        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withSelfRel());
+        if (review != null) review.add(linkTo(ProductController.class).slash(review.getProductId()).withRel(PRODUCT));
 
         return review;
     }
