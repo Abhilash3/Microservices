@@ -9,20 +9,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static com.epam.onboarding.controller.ProductController.REVIEW_SERVICE;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -46,10 +40,7 @@ public class ProductControllerTest {
     private IProductService productService;
 
     @MockBean
-    private DiscoveryClient discoveryClient;
-
-    @MockBean
-    private RestTemplate restTemplate;
+    private ReviewController reviewController;
 
     @Test
     public void fetchProduct() throws Exception {
@@ -152,7 +143,7 @@ public class ProductControllerTest {
         Product product = product("A");
         Review review = review(product.getProductId(), "bad", 2);
 
-        when(restTemplate.postForObject(anyString(), any(HttpEntity.class), eq(Review.class))).thenReturn(review);
+        when(reviewController.create(anyLong(), anyString(), anyInt())).thenReturn(review);
 
         mvc.perform(
                 post("/products/" + product.getProductId() + "/reviews")
@@ -164,8 +155,7 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
-        verify(discoveryClient).getInstances(REVIEW_SERVICE);
-        verify(restTemplate).postForObject(endsWith(product.getProductId() + "/reviews"), any(HttpEntity.class), eq(Review.class));
+        verify(reviewController).create(eq(product.getProductId()), eq(review.getDescription()), eq(review.getRating()));
     }
 
     @Test
@@ -173,9 +163,7 @@ public class ProductControllerTest {
         Product product = product("A");
         Review review = review(product.getProductId(), "bad", 1);
 
-        ResponseEntity<Review> mockEntity = mock(ResponseEntity.class);
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Review.class))).thenReturn(mockEntity);
-        when(mockEntity.getBody()).thenReturn(review);
+        when(reviewController.update(anyLong(), anyLong(), any(UpdateRequest.class))).thenReturn(review);
 
         mvc.perform(
                 put(String.format("/products/%d/reviews/%d", product.getProductId(), review.getReviewId()))
@@ -186,10 +174,8 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
-        verify(discoveryClient).getInstances(REVIEW_SERVICE);
-        verify(restTemplate).exchange(
-                endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
-                eq(HttpMethod.PUT), any(HttpEntity.class), eq(Review.class));
+        UpdateRequest request = new UpdateRequest().setProperty("rating").setValue("1");
+        verify(reviewController).update(eq(product.getProductId()), eq(review.getReviewId()), eq(request));
     }
 
     @Test
@@ -197,23 +183,17 @@ public class ProductControllerTest {
         Product product = product("A");
         Review review = review(product.getProductId(), "good", 4);
 
-        ResponseEntity<Review> mockEntity = mock(ResponseEntity.class);
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Review.class))).thenReturn(mockEntity);
-        when(mockEntity.getBody()).thenReturn(review);
+        when(reviewController.delete(anyLong(), anyLong())).thenReturn(review);
 
         mvc.perform(
                 delete(String.format("/products/%d/reviews/%d", product.getProductId(), review.getReviewId()))
-                    .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description", is(review.getDescription())))
                 .andExpect(jsonPath("$.rating", is(review.getRating())));
 
-        verify(discoveryClient).getInstances(REVIEW_SERVICE);
-        verify(restTemplate).exchange(
-                endsWith(String.format("%d/reviews/%d", product.getProductId(), review.getReviewId())),
-                eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Review.class));
-        verify(mockEntity).getBody();
+        verify(reviewController).delete(eq(product.getProductId()), eq(review.getReviewId()));
     }
 
     private Product product(String name) {
