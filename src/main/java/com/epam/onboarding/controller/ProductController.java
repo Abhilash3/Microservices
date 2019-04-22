@@ -53,9 +53,9 @@ public class ProductController {
         if (product == null) {
             product = productService.save(new Product().setName(productName).setDescription(description));
         }
+
         product.add(linkTo(ProductController.class).withRel(PRODUCTS));
         product.add(linkTo(ProductController.class).slash(product.getProductId()).withSelfRel());
-
         return product;
     }
 
@@ -72,6 +72,9 @@ public class ProductController {
         }
 
         productService.save(product);
+
+        product.add(linkTo(ProductController.class).withRel(PRODUCTS));
+        product.add(linkTo(ProductController.class).slash(product.getProductId()).withSelfRel());
         return product;
     }
 
