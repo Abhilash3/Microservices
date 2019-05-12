@@ -83,6 +83,14 @@ public class ProductController {
         return productService.removeById(productId);
     }
 
+    @GetMapping(value = "/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Iterable<Review> getReviews(@PathVariable("id") Long productId) {
+        Iterable<Review> reviews = reviewController.fetchAll(productId);
+        reviews.forEach(review -> review.add(linkTo(ProductController.class).slash(review.getProductId()).withRel(PRODUCT)));
+
+        return reviews;
+    }
+
     @PostMapping(value = "/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
     public Review createReview(@PathVariable("id") Long productId, @RequestParam(DESCRIPTION) String description,
                                @RequestParam("rating") int rating) {
