@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
-@Component
 @Order(1)
 @Profile("!test")
 public class ApplicationInit implements CommandLineRunner {

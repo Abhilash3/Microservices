@@ -53,9 +53,9 @@ public class ProductController {
         if (product == null) {
             product = productService.save(new Product().setName(productName).setDescription(description));
         }
+
         product.add(linkTo(ProductController.class).withRel(PRODUCTS));
         product.add(linkTo(ProductController.class).slash(product.getProductId()).withSelfRel());
-
         return product;
     }
 
@@ -72,12 +72,23 @@ public class ProductController {
         }
 
         productService.save(product);
+
+        product.add(linkTo(ProductController.class).withRel(PRODUCTS));
+        product.add(linkTo(ProductController.class).slash(product.getProductId()).withSelfRel());
         return product;
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Product delete(@PathVariable("id") Long productId) {
         return productService.removeById(productId);
+    }
+
+    @GetMapping(value = "/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Iterable<Review> getReviews(@PathVariable("id") Long productId) {
+        Iterable<Review> reviews = reviewController.fetchAll(productId);
+        reviews.forEach(review -> review.add(linkTo(ProductController.class).slash(review.getProductId()).withRel(PRODUCT)));
+
+        return reviews;
     }
 
     @PostMapping(value = "/{id}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)

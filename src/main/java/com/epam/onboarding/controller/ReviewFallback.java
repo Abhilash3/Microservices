@@ -28,7 +28,7 @@ public class ReviewFallback implements ReviewController {
         Review review = new Review().setReviewId(reviewId).setProductId(productId);
         if ("description".equals(updateRequest.getProperty())) {
             review.setDescription(updateRequest.getValue());
-        } else if (updateRequest.getValue().matches("-?\\d+")){
+        } else if (updateRequest.getValue().matches("-?\\d+")) {
             review.setRating(Integer.parseInt(updateRequest.getValue()));
         }
 
