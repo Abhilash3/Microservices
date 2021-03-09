@@ -1,0 +1,37 @@
+<h4>Reviews</h4>
+<br>
+<table class="table table-sm">
+  <thead class="thead-light">
+    <th>#</th>
+    <th>Rating</th>
+    <th>Description</th>
+    <th class="text-center">
+      <button class="btn btn-sm btn-primary" [routerLink]="['/products/' + productId, {outlets: {review: 'reviews/add'}}]"><i class="fas fa-plus-circle"></i></button>
+    </th>
+  </thead>
+  <tbody>
+    <ng-template ngFor let-x let-i="index" [ngForOf]="reviews">
+      <tr>
+        <td><label class="col-form-label">{{i + 1}}</label></td>
+        <td>
+          <label class="col-form-label">
+            <i *ngFor="let y of ' '.repeat(x.rating).split('')" class="fas fa-star"></i>
+          </label>
+        </td>
+        <td><label class="col-form-label">{{x.description}}</label></td>
+        <td class="text-center">
+          <div *ngIf="!delete[i]">
+            <button class="btn btn-sm btn-danger" (click)="delete[i] = true"><i class="fas fa-times-circle"></i></button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="delete[i]" class="table-danger slim">
+        <td colspan="3" class="text-right"><label class="col-form-label">Are you sure you want to delete this Review?</label></td>
+        <td class="text-center">
+          <button class="btn btn-danger btn-sm" (click)="deleteReview(i)"><i class="fas fa-check-circle"></i></button>
+          <button class="btn btn-success btn-sm" (click)="delete[i] = false"><i class="fas fa-times-circle"></i></button>
+        </td>
+      </tr>
+    </ng-template>
+  </tbody>
+</table>
